@@ -34,7 +34,7 @@
         static void Main(string[] args)
         {
             GetInput();
-            Console.WriteLine(Process());
+            WriteOutput(Process());
         }
 
         private static string Process()
@@ -44,24 +44,15 @@
 
             foreach (var card in Cards)
             {
-                if (petya.Count == WinCount || vasya.Count == WinCount)
-                {
-                    if (petya.Count == WinCount && vasya.Count == WinCount) return "Draw";
-                    if (petya.Count == WinCount)
-                        return petya.Name;
-                    if (vasya.Count == WinCount)
-                        return vasya.Name;
-                }
+                if (petya.Count == WinCount) return petya.Name;
+                if (vasya.Count == WinCount) return vasya.Name;
 
-                if (card % 5 == 0)
-                {
-                    vasya.IncrementCount();
-                }
+                bool isFive = card % 5 == 0;
+                bool isThree = card % 3 == 0;
 
-                if (card % 3 == 0)
-                {
-                    petya.IncrementCount();
-                }
+                if (isFive && isThree) continue;
+                if (isFive) vasya.IncrementCount();
+                if (isThree) petya.IncrementCount();
             }
 
             if (petya.Count == vasya.Count) return "Draw";
