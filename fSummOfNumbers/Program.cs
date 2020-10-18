@@ -5,6 +5,7 @@
     using System.IO;
     using System.Linq;
     using System.Net;
+
     using Newtonsoft.Json;
 
     class Program
@@ -14,8 +15,8 @@
 
         private static string Host;
         private static string Port;
-        private static string A;
-        private static string B;
+        private static string A = "0";
+        private static string B = "0";
 
         static void Main(string[] args)
         {
@@ -23,18 +24,44 @@
             WriteOutput(Process());
         }
 
-        private static int Process()
+        private static long Process()
         {
-            var request = (HttpWebRequest)WebRequest.Create($"{Host}:{Port}?a={A}&b={B}");
+            var uri = $"{Host}:{Port}?a={A}&b={B}";
+            var request = (HttpWebRequest) WebRequest.Create(uri);
             request.Method = "GET";
 
             var response = (HttpWebResponse) request.GetResponse();
-            using (var streamReader = new StreamReader(response.GetResponseStream()))
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                return 0;
+            }
+
+            var responseStream = response.GetResponseStream();
+            if (responseStream == null)
+            {
+                return 0;
+            }
+
+            using (responseStream)
+            using (var streamReader = new StreamReader(responseStream))
             {
                 var json = streamReader.ReadToEnd();
-                var numbers = JsonConvert.DeserializeObject<List<int>>(json);
 
-                return numbers.Sum();
+                try
+                {
+                    long result = 0;
+                    var numbers = JsonConvert.DeserializeObject<List<int>>(json);
+                    foreach (var number in numbers)
+                    {
+                        result += number;
+                    }
+
+                    return result;
+                }
+                catch (Exception)
+                {
+                    return 0;
+                }
             }
         }
 
@@ -44,8 +71,9 @@
 
             Host = input[0];
             Port = input[1];
-            A = input[2];
-            B = input[3];
+
+            if(input.Length >= 3) A = input[2];
+            if(input.Length >= 4) B = input[3];
         }
 
         private static string ReadInput()
